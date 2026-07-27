@@ -1,0 +1,287 @@
+-- 1. Calculate the Month-over-Month Sales Growth Percentage
+SELECT * FROM vrinda_store
+
+WITH monthly_sales AS (
+    SELECT
+        DATE_TRUNC('month', order_date) AS month,
+        SUM(amount) AS revenue
+    FROM vrinda_store
+    GROUP BY DATE_TRUNC('month', order_date)
+)
+
+SELECT
+    month,
+    revenue,
+    LAG(revenue) OVER(ORDER BY month) AS previous_month,
+    ROUND(
+        ((revenue - LAG(revenue) OVER(ORDER BY month))
+        / LAG(revenue) OVER(ORDER BY month))*100,
+        2
+    ) AS growth_percentage
+FROM monthly_sales;
+
+-- 2. Find Products That Have Never Been Sold
+SELECT * FROM vrinda_store
+
+SELECT sku
+FROM vrinda_store
+GROUP BY sku
+HAVING SUM(CAST(quantity AS INT)) = 0;
+-- 3. Find Customers Who Purchased from More Than One Sales Channel
+SELECT
+    customer_id,
+    COUNT(DISTINCT channel) AS total_channels
+FROM vrinda_store
+GROUP BY customer_id
+HAVING COUNT(DISTINCT channel) > 1;
+
+-- 4. Most Popular Product Size in Each Category
+SELECT * FROM vrinda_store
+
+SELECT *
+FROM
+(
+SELECT
+category,
+size,
+COUNT(*) total_orders,
+ROW_NUMBER() OVER(PARTITION BY category ORDER BY COUNT(*) DESC) rn
+FROM vrinda_store
+GROUP BY category,size
+)t
+WHERE rn=1;
+
+-- 5. First and Last Order of Every Customer
+SELECT * FROM vrinda_store
+
+SELECT
+customer_id,
+MIN(order_date) AS first_order
+MAX(order_date) AS last_order
+FROM vrinda_store
+GROUP BY customer_id
+ORDER BY first_order
+ORDER BY last_order
+
+-- 6. Cumulative Revenue by Category
+SELECT * FROM vrinda_store
+
+SELECT
+category,
+SUM(amount) revenue,
+SUM(SUM(amount)) OVER(ORDER BY category) cumulative_revenue
+FROM vrinda_store
+GROUP BY category;
+
+-- 7. Top 10% Highest Spending Customers
+SELECT * FROM vrinda_store
+
+SELECT *
+FROM
+(
+SELECT
+customer_id,
+SUM(amount) total_spent,
+NTILE(10) OVER(ORDER BY SUM(amount) DESC) percentile
+FROM vrinda_store
+GROUP BY customer_id
+)t
+WHERE percentile=1;
+
+-- 8. Pareto Analysis (80% Revenue)
+SELECT * FROM vrinda_store
+
+WITH sales AS
+(
+SELECT
+sku,
+SUM(amount) revenue
+FROM vrinda_store
+GROUP BY sku
+)
+
+SELECT
+sku,
+revenue,
+SUM(revenue) OVER(ORDER BY revenue DESC) running_total
+FROM sales;
+
+-- 9. Detect Duplicate Orders
+SELECT * FROM vrinda_store
+
+SELECT
+customer_id,
+sku,
+quantity,
+order_date,
+COUNT(*) duplicate_count
+FROM vrinda_store
+GROUP BY
+customer_id,
+sku,
+quantity,
+order_date
+HAVING COUNT(*)>1;
+
+-- 10. Longest Gap Between Purchases
+SELECT * FROM vrinda_store
+
+SELECT
+customer_id,
+MAX(order_date
+LAG(order_date) OVER(PARTITION BY customer_id ORDER BY order_date))
+AS longest_gap
+FROM vrinda_store
+GROUP BY customer_id;
+
+-- 11. Average Revenue per Customer by State
+SELECT * FROM vrinda_store
+
+SELECT
+ship_state,
+AVG(customer_revenue) avg_revenue
+FROM
+(
+SELECT
+customer_id,
+ship_state,
+SUM(amount) customer_revenue
+FROM vrinda_store
+GROUP BY customer_id,ship_state
+)t
+GROUP BY ship_state;
+-- 12. Customers Spending Above Average
+SELECT * FROM vrinda_store
+
+WITH customer_sales AS
+(
+SELECT
+customer_id,
+SUM(amount) total_sales
+FROM vrinda_store
+GROUP BY customer_id
+)
+
+SELECT *
+FROM customer_sales
+WHERE total_sales >
+(
+SELECT AVG(total_sales)
+FROM customer_sales
+);
+-- 13. Fastest Growing Category
+SELECT * FROM vrinda_store
+
+WITH monthly AS
+(
+SELECT
+category,
+DATE_TRUNC('month',order_date) month,
+SUM(amount) sales
+FROM vrinda_store
+GROUP BY category,month
+)
+
+SELECT
+category,
+month,
+sales,
+sales-
+LAG(sales) OVER(PARTITION BY category ORDER BY month) growth
+FROM monthly;
+-- 14. Least Selling Product in Every Category
+SELECT * FROM vrinda_store
+
+SELECT *
+FROM
+(
+SELECT
+category,
+sku,
+SUM(amount) revenue,
+ROW_NUMBER() OVER(PARTITION BY category ORDER BY SUM(amount))
+rn
+FROM vrinda_store
+GROUP BY category,sku
+)t
+WHERE rn=1;
+-- 15. Compare Monthly Revenue with Previous Month
+SELECT * FROM vrinda_store
+
+SELECT
+DATE_TRUNC('month',order_date) month,
+SUM(amount) revenue,
+LAG(SUM(amount)) OVER(ORDER BY DATE_TRUNC('month',order_date))
+previous_month
+FROM vrinda_store
+GROUP BY DATE_TRUNC('month',order_date);
+
+-- 16. Highest Value Order in Each State
+SELECT * FROM vrinda_store
+
+SELECT *
+FROM
+(
+SELECT
+ship_state,
+order_id,
+SUM(amount) revenue,
+ROW_NUMBER() OVER(PARTITION BY ship_state ORDER BY SUM(amount) DESC)
+rn
+FROM vrinda_store
+GROUP BY ship_state,order_id
+)t
+WHERE rn=1;
+
+-- 17. Customer Segmentation
+SELECT * FROM vrinda_store
+
+SELECT
+customer_id,
+SUM(amount) total_sales,
+CASE
+WHEN SUM(amount)<500 THEN 'Low'
+WHEN SUM(amount)<2000 THEN 'Medium'
+ELSE 'High'
+END customer_segment
+FROM vrinda_store
+GROUP BY customer_id;
+
+-- 18. Most Profitable Sales Channel
+SELECT * FROM vrinda_store
+
+SELECT
+channel,
+COUNT(*) total_orders,
+SUM(amount) revenue
+FROM vrinda_store
+GROUP BY channel
+ORDER BY revenue DESC;
+-- 19. Rank Customers by Spending
+SELECT * FROM vrinda_store
+
+SELECT
+customer_id,
+SUM(amount) total_sales,
+RANK() OVER(ORDER BY SUM(amount) DESC) customer_rank
+FROM vrinda_store
+GROUP BY customer_id;
+
+-- 20. Top 3 Products in Every Category
+SELECT * FROM vrinda_store
+
+SELECT *
+FROM
+(
+SELECT
+category,
+sku,
+SUM(amount) revenue,
+DENSE_RANK() OVER(
+PARTITION BY category
+ORDER BY SUM(amount) DESC
+) rnk
+FROM vrinda_store
+GROUP BY category,sku
+)t
+WHERE rnk<=3;
