@@ -1,0 +1,24 @@
+CREATE TABLE vrinda_store (
+    id SERIAL PRIMARY KEY,
+    order_index INT,
+    order_id VARCHAR(50),
+    customer_id BIGINT,
+    gender VARCHAR(10),
+    age INT,
+    order_date DATE,
+    status VARCHAR(30),
+    channel VARCHAR(30),
+    sku VARCHAR(100),
+    category VARCHAR(50),
+    size VARCHAR(20),
+    quantity VARCHAR(20),
+    currency VARCHAR(10),
+    amount DECIMAL(10,2),
+    ship_city VARCHAR(100),
+    ship_state VARCHAR(100),
+    ship_postal_code BIGINT,
+    ship_country VARCHAR(100),
+    b2b BOOLEAN
+);
+
+SELECT * FROM vrinda_store
