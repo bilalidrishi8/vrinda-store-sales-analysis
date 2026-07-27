@@ -1,0 +1,20 @@
+-- 1. Calculate the month-over-month sales growth percentage.
+-- 2. Find products that have never been sold.
+-- 3. Find customers who purchased from more than one sales channel.
+-- 4. Determine the most popular product size for each category.
+-- 5. Find the first and last order placed by every customer.
+-- 6. Calculate the cumulative revenue by category.
+-- 7. Find the top 10% highest-spending customers.
+-- 8. Identify products contributing to 80% of total revenue (Pareto Analysis).
+-- 9. Detect duplicate orders based on customer, SKU, quantity, and order date.
+-- 10. Find the longest gap between consecutive purchases for each customer.
+-- 11. Calculate the average revenue per customer for each state.
+-- 12. Find customers whose spending is above the overall average customer spending.
+-- 13. Determine the fastest-growing product category month over month.
+-- 14. Find the least-selling product in each category.
+-- 15. Compare each month's revenue with the previous month.
+-- 16. Find the highest-value order placed in each state.
+-- 17. Categorize customers into Low, Medium, and High Value based on their total spending.
+-- 18. Identify the most profitable sales channel by comparing total revenue and total orders.
+-- 10. Rank all customers based on their total spending.
+-- 20. Find the top 3 products in every category using window functions.
